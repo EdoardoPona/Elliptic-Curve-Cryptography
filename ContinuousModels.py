@@ -103,20 +103,3 @@ class Point:
         y_r = self.y + m*(x_r - self.x)
         return Point(x_r, -y_r, self.curve)
 
-
-E = Curve(a=-7, b=10)
-P = Point(1, 2, curve=E)
-Q = Point(3, 4, curve=E)
-
-"""print(E.identity + P)
-print(P.double())
-print(P+Q)"""
-
-for i in range(10):
-    S = S+P
-    print(S)
-
-print("####")
-
-for i in range(10):
-    print(P*i)
