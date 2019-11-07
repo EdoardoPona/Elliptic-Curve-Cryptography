@@ -1,4 +1,3 @@
-""" elliptic curves over Finite fields """
 import builtins
 import utils
 
@@ -17,11 +16,10 @@ def print(*args, **kwargs):
 
 class Curve:
 
-    def __init__(self, a, b, p):
-        """ defines an elliptic curve of with the form: y**2 = x**3 + ax + b over Z/Zp """
+    def __init__(self, a, b):
+        """ defines an elliptic curve of with the form: y**2 = x**3 + ax + b """
         assert (4*a**3 + 27*b**2 != 0)          # excluding singular curves
         self.a, self.b = a, b
-        self.p = p
         self.identity = Point(None, None, self, is_identity=True)
 
     def __eq__(self, other):
@@ -30,11 +28,11 @@ class Curve:
 
     def belongs_to_curve(self, x, y):
         """ does point belong to this curve """
-        return (y**2) % self.p == (x**3 + self.a*x + self.b) % self.p
+        return utils.truncate(y**2) == utils.truncate(x**3 + self.a*x + self.b)
 
     def get_slope(self, point):
         x, y = point.x, point.y
-        return (3*x**2 + self.a) * utils.inverse_of(2*y, self.p)
+        return (3*x**2 + self.a) / (2*y)
 
 
 class Point:
@@ -47,12 +45,11 @@ class Point:
         self.x, self.y = x, y
         self.curve = curve
         self.is_identity = is_identity
-        self.p = self.curve.p
 
     def __eq__(self, other):
         """ overloading equality comparison """
         if isinstance(other, Point):
-            return self.x % self.p == other.x % self.p and self.y % self.p == other.y % self.p and self.curve == other.curve
+            return self.x == other.x and self.y == other.y and self.curve == other.curve
         else:
             return False
 
@@ -71,11 +68,11 @@ class Point:
 
         x_p, y_p = self.x, self.y   # making things more readable
 
-        m = (y_p - Q.y) * utils.inverse_of(x_p - Q.x, self.p)
-        x_r = (m**2 - x_p - Q.x) % self.p
-        y_r = (y_p + m*(x_r - x_p)) % self.p
+        m = (y_p - Q.y) / (x_p - Q.x)
+        x_r = m**2 - x_p - Q.x
+        y_r = y_p + m*(x_r - x_p)
 
-        return -Point(x_r, y_r, self.curve)
+        return Point(x_r, -y_r, self.curve)
 
     def __sub__(self, other):
         return self + (-other)
@@ -84,17 +81,17 @@ class Point:
         """ overloading unary minus with point inverse """
         if self.is_identity:
             return self
-        return Point(self.x, -self.y % self.p, self.curve)
+        return Point(self.x, -self.y, self.curve)
 
     def __mul__(self, n):
         binary = reversed(bin(n)[2:])           # [2:] removes the prefix
         S = self.curve.identity
         addend = self
+
         for i in binary:
             if i == '1':
                 S = S + addend
             addend = addend.double()
-
         return -S
 
     def double(self):
@@ -102,10 +99,24 @@ class Point:
             return self
 
         m = self.curve.get_slope(self)
-        x_r = (m**2 - 2*self.x) % self.p
-        y_r = (self.y + m*(x_r - self.x)) % self.p
-        return -Point(x_r, y_r, self.curve)
+        x_r = m**2 - 2*self.x
+        y_r = self.y + m*(x_r - self.x)
+        return Point(x_r, -y_r, self.curve)
 
 
-E = Curve(a=2, b=3, p=97)
-P = Point(3, 6, curve=E)
+E = Curve(a=-7, b=10)
+P = Point(1, 2, curve=E)
+Q = Point(3, 4, curve=E)
+
+"""print(E.identity + P)
+print(P.double())
+print(P+Q)"""
+
+for i in range(10):
+    S = S+P
+    print(S)
+
+print("####")
+
+for i in range(10):
+    print(P*i)
