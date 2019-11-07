@@ -1,4 +1,8 @@
+""" Helper functions
+source: https://andrea.corbellini.name/2015/05/23/elliptic-curve-cryptography-finite-fields-and-discrete-logarithms/ """
+
 import math
+
 
 
 def truncate(number, digits=4) -> float:
