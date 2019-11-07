@@ -106,6 +106,3 @@ class Point:
         y_r = (self.y + m*(x_r - self.x)) % self.p
         return -Point(x_r, y_r, self.curve)
 
-
-E = Curve(a=2, b=3, p=97)
-P = Point(3, 6, curve=E)
